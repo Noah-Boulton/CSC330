@@ -5,11 +5,6 @@ fun same_string(s1 : string, s2 : string) =
     s1 = s2
 
 (* put your solutions for Part 1 here *)
-(* Write a function all_except_option, which takes a string and a string list. 
-Return NONE if the string is not in the list, else return SOME list where 
-lst is identical to the argument list except the string is not in it. 
-You may assume the string is in the list at most once. Use same_string, 
-provided to you, to compare strings. Sample solution is around 8 lines. *)
 fun all_except_option(s1, lst) =
     case lst of 
         [] => NONE
@@ -21,35 +16,19 @@ fun all_except_option(s1, lst) =
                             else 
                                 case tl of
                                     SOME l => SOME (head :: l)
-                                |   NONE => NONE    
+                                  | NONE => NONE    
                         end
 
-(*Write a function get_substitutions1, which takes a string list list (a list of list of
-strings, the substitutions) and a string s and returns a string list. The result has all the
-strings that are in some list in substitutions that also has s, but s itself should not be in the result.*)
 fun get_substitutions1(lst, s) = 
     case lst of 
         [] => []
     |   head::tail =>   let
                             val hd_ans = all_except_option(s, head);
-                            val tl_ans = get_substitutions1(tail, s) (* Might not need this here because it should only be calculated once*)
                         in
                             case hd_ans of
-                                NONE => tl_ans
-                            |   SOME l => l @ tl_ans
+                                NONE => get_substitutions1(tail, s)
+                              | SOME l => l @ get_substitutions1(tail, s)
                         end
-
-(* fun get_substitutions2(lst, s) = 
-    case lst of 
-        [] => []
-    |   head::tail =>   let
-                            val hd_ans = all_except_option(s, head);
-                            val tl_ans = get_substitutions2(tail, s)
-                        in
-                            case hd_ans of
-                                NONE => tl_ans
-                            |   SOME l => l @ tl_ans
-                        end *)
 
 fun get_substitutions2(lst, s) = 
     let 
@@ -66,7 +45,6 @@ fun get_substitutions2(lst, s) =
     in  
         subs(lst, s, [])
     end
-
 
 fun similar_names(lst, {first:string ,middle:string , last:string}) = 
     let
@@ -91,9 +69,7 @@ type card = suit * rank
 datatype color = Red | Black
 datatype move = Discard of card | Draw
 
-
 exception IllegalMove
-
 
 (* put your solutions for Part 2 here *)
 fun card_color((s, r):card) = 
@@ -114,7 +90,7 @@ fun card_value((s, r):card) =
 fun remove_card(cs: card list, c: card, e: exn) = 
     case cs of 
         [] => raise e
-    |   head::tail =>   if head = c
+      | head::tail =>   if head = c
                         then tail
                         else head::remove_card(tail,c ,e)
 
@@ -135,12 +111,6 @@ fun sum_cards(cs) =
         sum(cs, 0)
     end
 
-(*Let sum be the sum of the values of the held-cards. 
-If sum is greater than goal, the preliminary score is two times (sum − goal), 
-else the preliminary score is (goal − sum). 
-The score is the preliminary score unless all the held-cards are the same color, 
-in which case the score is the preliminary score divided by 2 
-(and rounded down as usual with integer division; use ML’s div operator).*)
 fun score(held_cards, goal) = 
     let
         val sum = sum_cards(held_cards);
@@ -156,7 +126,7 @@ fun score(held_cards, goal) =
 
 fun officiate(card_list, move_list, goal) =
     let 
-        fun game(card_list, held_cards, move_list, goal) = (*Need to extract the move_list move*)
+        fun game(card_list, held_cards, move_list, goal) = 
             case move_list of   
                 [] => score(held_cards, goal)
                 | move::tail => case move of 
@@ -170,3 +140,31 @@ fun officiate(card_list, move_list, goal) =
     in 
         game(card_list, [], move_list, goal)
     end
+
+val test1_0=all_except_option("5",["4", "5", "9", "10", "5"]) = SOME ["4", "9", "10", "5"];
+val test2_0=get_substitutions1([["Bob","Robert"],["Betty", "Anne"],["Robbie","Robert","R"], ["Robby", "Bob", "Robert"]],
+                               "Robert")
+            = ["Bob","Robbie","R", "Robby", "Bob"];
+val test3_0=get_substitutions2([["Bob","Robert"],["Betty", "Anne"],["Robbie","Robert","R"], ["Robby", "Bob", "Robert"]],
+                               "Robert")
+            = ["Bob","Robbie","R", "Robby", "Bob"];
+val test4_0=similar_names([
+                             ["Bob","Robert"],
+                             ["Robbie","Robert","R"],
+                             ["Robby", "Bob", "Robert"],
+                             ["Betty", "Anne"]
+                         ], {first="Robert", middle="J", last="Willis"}) =
+            [{first="Robert", middle="J", last="Willis"},
+            {first="Bob", middle="J", last="Willis"},
+             {first="Robbie", middle="J", last="Willis"},
+             {first="R", middle="J", last="Willis"},
+             {first="Robby", middle="J", last="Willis"},
+             {first="Bob", middle="J", last="Willis"}];
+val test5_0= card_color((Hearts, Num 8)) = Red;
+val test6_0= card_value((Hearts, Num 8)) = 8;
+val test7_0 = remove_card([(Hearts, Num 8), (Spades, Ace), (Clubs, Num 2), (Diamonds, King)], (Clubs, Ace), IllegalMove) = [(Hearts, Num 8), (Spades, Ace), (Clubs, Num 2), (Diamonds, King)] handle IllegalMove => true;
+ val test8_0 = all_same_color([(Hearts, Num 8)]) = true;
+val test9_0 = sum_cards([(Hearts, Num 8), (Spades, Ace), (Clubs, Num 2), (Diamonds, King)]) = 31;
+val test10_0 = score([(Hearts, Num 8), (Spades, Ace), (Clubs, Num 2), (Diamonds, King)], 1) = 30 * 2;
+val test11_0 = officiate([(Hearts, Num 8), (Spades, Ace), (Clubs, Num 2), (Diamonds, King)], [Draw, Discard(Clubs, Num 3)], 10) = 14 handle IllegalMove => true; 
+
