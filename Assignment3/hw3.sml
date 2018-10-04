@@ -17,7 +17,12 @@ datatype valu = Const of int
 	      | Constructor of string * valu
 
 (* Description of g:
-
+	g takes 2 functions:
+		f1 : unit -> int
+		f2 : string -> int
+	g computes f1 of all wildcards and f2 of all strings.
+	The result is summed for lists of patterns by using a partial application of g.
+	g returns 0 for UnitP and ConstP, effectively ignoring them. 
 *)
 
 fun g f1 f2 p =
@@ -25,13 +30,12 @@ fun g f1 f2 p =
 	val r = g f1 f2
     in
 	case p of
-	    Wildcard          => f1 ()
-	  | Variable x        => f2 x
-	  | TupleP ps         => List.foldl (fn (p,i) => (r p) + i) 0 ps
-	  | ConstructorP(_,p) => r p
+	    Wildcard          => f1 () (*unit -> int*)
+	  | Variable x        => f2 x (*x of string -> int*)
+	  | TupleP ps         => List.foldl (fn (p,i) => (r p) + i) 0 ps (*pattern list*)
+	  | ConstructorP(_,p) => r p (*any string * pattern -> int*)
 	  | _                 => 0
     end
-
 
 (**** put all your code after this line ****)
 fun only_capitals l = 
@@ -74,3 +78,58 @@ fun all_answers f l =
 	in	
 		append(map f l, [])
 	end
+
+fun count_wildcards p  = 
+	g (fn ()=> 1) (fn x => 0) p
+
+fun count_wild_and_variable_lengths p =
+	g (fn ()=> 1) (fn x => String.size x) p
+
+fun count_some_var (s, p) =
+	g (fn () => 0) (fn x => if s = x then 1 else 0) p
+
+(* fun check_pat p = 
+	let 
+		fun strings_of_pat p = 
+			case p of	
+			  	Variable x 	=> [x]
+			  | TupleP ps 	=> List.foldl (fn (q,i) => (strings_of_pat q) @ i) [] ps
+			  | ConstructorP(_,q) => strings_of_pat q
+              | _ => []
+		fun unique xs = 
+			case xs of	
+				[] => true
+			  | x::xs => if List.exists (fn y => x = y) xs then false else unique(xs)
+	in
+		unique(strings_of_pat p)
+	end *)
+
+val check_pat  = 
+	let 
+		fun strings_of_pat p = 
+			case p of	
+			  	Variable x 	=> [x]
+			  | TupleP ps 	=> List.foldl (fn (q,i) => (strings_of_pat q) @ i) [] ps
+			  | ConstructorP(_,q) => strings_of_pat q
+              | _ => []
+		fun unique xs = 
+			case xs of	
+				[] => true
+			  | x::xs => if List.exists (fn y => x = y) xs then false else unique(xs)
+	in
+		unique o strings_of_pat 
+	end
+
+fun match (v, p) = 
+	case (v, p) of 
+		(_, Wildcard) => SOME []
+	  | (_, Variable s) => SOME [(s, v)]
+	  | (Unit, UnitP) => SOME []
+	  | (Const x, ConstP y) => if x = y then SOME [] else NONE
+	  | (Tuple vs, TupleP ps) => if length vs = length ps then all_answers match (ListPair.zip(vs, ps)) else NONE
+	  | (Constructor(s2, x) ,ConstructorP (s1, y)) => if s1 = s2 then match (x, y) else NONE
+	  | (_, _) => NONE
+
+fun first_match v ps = 
+	SOME (first_answer (fn p => match(v, p)) ps)
+	handle NoAnswer => NONE
