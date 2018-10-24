@@ -9,27 +9,23 @@
 (define (sequence low high stride)
   (if (>= high low) 
       (cons low (sequence (+ low stride) high stride))
-      null)
-)
+      null))
 
 (define (string-append-map xs suffix)
   (map (lambda (x)
-         (string-append x suffix)) xs )
-  )
+         (string-append x suffix)) xs ))
 
 
 (define (list-nth-mod xs n)
   (cond [(< n 0) (error "list-nth-mod: negative number")]  
         [(null? xs) (error "list-nth-mod: empty list")]  
-        [#t (car(list-tail xs (remainder n (length xs))))])
-  )
+        [#t (car(list-tail xs (remainder n (length xs))))]))
 
 (define (stream-for-n-steps s n)
   (if (= 0 n)
       null
       (cons (car(s)) (stream-for-n-steps (cdr(s)) (- n 1)))
-      )
-  )
+      ))
 
 (define funny-number-stream
   (letrec ([f (lambda (x)
@@ -45,13 +41,6 @@
                  (cons "dog.jpg" (lambda () (f "cat.jpg")))))])
     (lambda () (f "cat.jpg"))))
 
-;(define nats
-;  (letrec ([f (lambda (x)
-;                (cons x (lambda () (f (+ x 1)))))])
-;    (lambda () (f 1))))
-
-(define ones (lambda () (cons 1 ones)))
-
 (define (stream-add-zero s)
   (letrec ([f (lambda ()
                 (cons (cons 0 (car(s))) (lambda () (f))))])
@@ -60,11 +49,8 @@
 (define (cycle-lists xs ys)
   (letrec
       ([f (lambda (n) (cons (cons (list-nth-mod xs n) (list-nth-mod ys n)) (lambda () (f (+ 1 n)))))])
-      (lambda () (f 0))
-  )
-)
+      (lambda () (f 0))))
 
-;(vector-assoc 4 (vector (cons 2 1) (cons 3 1) (cons 4 1) (cons 5 1)))
 (define (vector-assoc v vec)
   (letrec
       ([f (lambda (n) (if(= n (vector-length vec))
@@ -72,36 +58,27 @@
                          (if(pair? (vector-ref vec n))
                             (if (equal? v (car (vector-ref vec n)))
                                  (vector-ref vec n)
-                                 (f(+ n 1))
-                             )
-                            (f(+ n 1))
-                         )
-                      )
-           )
-        ]
-       )
-      (f 0)
-   )
-)
+                                 (f(+ n 1)))
+                            (f(+ n 1)))))])
+      (f 0)))
 
-;(define (vector-assoc v vec)
-;  (letrec
-;      ([f (lambda (n) (if (= n vector-length vec)
-;                         (#f)
-;                         ((if (pair? (vector-ref vec n)) 
-;                              (if(equal? (car (vector-ref vec n)) v)
-;                                 (v)
-;                                 (f(+ n 1))
-;                              )
-;                              (f(+ n 1))
-;                         )
-;                      )
-;         ))]
-;      )
-;      (f 0)
-;   )
-;)
+(define (cached-assoc xs n)
+  (let 
+      ([vec (make-vector n #f)]
+       [y 0])
+  (lambda (v) (let ([ans (vector-assoc v vec)])
+                  (if ans
+                      ans ;in vec list and just return
+                      (let ([new-ans (assoc v xs)])
+                        (begin (vector-set! vec (remainder y n) new-ans) (set! y (+ y 1)) new-ans))) ;not in vec list, get answer and put it in list
+                 ))))
 
-(define cached-assoc null)
-
-
+(define-syntax while-less 
+  (syntax-rules (do)
+    [(while-less e1 do e2) 
+     (letrec
+             ([f (lambda () (let ([y e1])
+                   (if(< e2 y)
+                            (f)
+                            #t)))]) 
+             (f))]))
