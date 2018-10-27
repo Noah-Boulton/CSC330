@@ -82,6 +82,21 @@
                          (int 0)))]
         [(aunit? e) (aunit)]
         [(apair? e) (apair (eval-under-env (apair-e1 e) env) (eval-under-env (apair-e2 e) env))]
+        [(mlet? e) (let ([name (mlet-var e)]
+                         [v (eval-under-env (mlet-e e) env)] 
+                         [b (mlet-body e)])
+                     (eval-under-env b (append (list (cons name v)) env)))] ; add (var name . exp) to the env list
+        [(fun? e) (closure env e)]
+        [(call? e) (let ([v1 (eval-under-env (call-funexp e) env)] ; function that returns a closure
+                         [v2 (eval-under-env (call-actual e) env)]) ; an expression
+                     (if (closure? v1)
+                         (let ([environment (closure-env v1)]
+                               [function (closure-fun v1)]) ; function has nameopt, formal, body
+                           ;evaluate the body here with enviroment and the nameopt attached to closure
+                           (if (fun-nameopt function)
+                               (eval-under-env (fun-body function) (append (list (cons (fun-nameopt function) v1) (cons (fun-formal function) v2)) environment)) ; we have a name and we need to bind it to the function in the closure ie. (fun-nameopt function . v1)
+                               (eval-under-env (fun-body function) (append (list (cons (fun-formal function) v2)) environment)))) ; we have #f and do not need to bind
+                         (error "MUPL call applied to non-colsure first parameter")))]
         ;; "CHANGE" add more cases here
         ;; one for each type of expression
         [#t (error (format "bad MUPL expression: ~v" e))]))
@@ -92,15 +107,31 @@
 
 ;; Problem C
 
-(define (ifaunit e1 e2 e3) "CHANGE")
+(define (ifaunit e1 e2 e3)
+  (if (aunit? (eval-exp e1))
+      (eval-exp e2)
+      (eval-exp e3)))
 
-(define (mlet* lstlst e2) "CHANGE")
+(define (mlet* lstlst e2)
+  (eval-under-env e2 (reverse lstlst)))
 
-(define (ifeq e1 e2 e3 e4) "CHANGE")
+(define (ifeq e1 e2 e3 e4)
+  (let ([_x (eval-exp e1)]
+        [_y (eval-exp e2)])
+    (if (= (int-num _x) (int-num _y))
+        (eval-exp e3)
+        (eval-exp e4))))
 
 ;; Problem D
+(define mupl-map
+  (fun "mupl-map" "f"
+       (fun #f "lst"
+            (ifgreater (isaunit (var "lst")) (int 0)
+                                               (aunit)
+                                               (let ([head (fst (var "lst"))]
+                                                     [tail (snd (var "lst"))])
+                                                 (apair (call (var "f") head) (call (call (var "mupl-map") (var "f")) tail)))))))
 
-(define mupl-map "CHANGE")
 ;; this binding is a bit tricky. it must return a function.
 ;; the first two lines should be something like this:
 ;;
@@ -113,8 +144,10 @@
 ;;    (call funexp1 funexp2 exp3)
 ;; we do
 ;;    (call (call funexp1 funexp2) exp3)
-;; 
+;
 
-(define mupl-mapAddN
+(define mupl-mapAddN 
   (mlet "map" mupl-map
-        "CHANGE (notice map is now in MUPL scope)"))
+        (fun "mupl-mapAddN" "i"
+             (fun #f "lst" (call (call (var "map") (fun "addI" "x" (add (var "x") (var "i")))) (var "lst"))))))
+        

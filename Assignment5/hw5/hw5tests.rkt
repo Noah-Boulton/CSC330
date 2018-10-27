@@ -296,7 +296,7 @@
                                                (add (fst (var "x")) (call (var "f1") (snd (var "x"))))))
                                (call (var "fnc") (apair (int 1) (aunit))))))
                (int 1)
-               )
+               ) 
 
   (test-equal? "Sum over list: test of recursive function 2"
                (handler (eval-exp (mlet "fnc"
@@ -592,13 +592,13 @@
    ))
 
 
-;(run-tests hw5-tests-part-A1)
-;(run-tests hw5-tests-part-A2)
-;(run-tests hw5-tests-part-B1)
-;(run-tests hw5-tests-part-B2)
-;(run-tests hw5-tests-part-B-exceptions)
+(run-tests hw5-tests-part-A1)
+(run-tests hw5-tests-part-A2)
+(run-tests hw5-tests-part-B1)
+(run-tests hw5-tests-part-B2)
+(run-tests hw5-tests-part-B-exceptions)
 (run-tests hw5-tests-part-B3)
-;(run-tests hw5-tests-part-B4)
-;(run-tests hw5-tests-part-B5)
-;(run-tests hw5-tests-part-C)
-;(run-tests hw5-tests-part-D)
+(run-tests hw5-tests-part-B4)
+(run-tests hw5-tests-part-B5)
+(run-tests hw5-tests-part-C)
+(run-tests hw5-tests-part-D)
