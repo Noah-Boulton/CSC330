@@ -15,3 +15,8 @@
 - Abstract types via dynamic type
 - Pure object orientation
 - Subtyping vs. parametric polymorphism
+
+## Languages
+- SML
+- Racket
+- Ruby
