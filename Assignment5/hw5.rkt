@@ -9,7 +9,7 @@
 (struct add  (e1 e2)  #:transparent)  ;; add two expressions
 (struct ifgreater (e1 e2 e3 e4)    #:transparent) ;; if e1 > e2 then e3 else e4
 (struct fun  (nameopt formal body) #:transparent) ;; a recursive(?) 1-argument function
-(struct call (funexp actual)       #:transparent) ;; function call
+(struct call (funexp actual)       #:transparent) ;; function call  
 (struct mlet (var e body) #:transparent) ;; a local binding (let var = e in body)
 (struct apair (e1 e2)     #:transparent) ;; make a new pair
 (struct fst  (e)    #:transparent) ;; get first part of a pair
@@ -71,7 +71,7 @@
         [(fst? e) (let ([v1 (eval-under-env (fst-e e) env)])
                     (if (apair? v1)
                       (eval-under-env (apair-e1 v1) env) 
-                      (error "MUPL snd applied to non-pair")))]
+                      (error "MUPL fst applied to non-pair")))]
         [(snd? e) (let ([v1 (eval-under-env (snd-e e) env)])
                     (if (apair? v1)
                       (eval-under-env (apair-e2 v1) env) 
