@@ -7,7 +7,6 @@
 class MyPiece < Piece
     # The constant All_My_Pieces should be declared here:
     # class array holding all the pieces and their rotations
-
     All_My_Pieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  # square (only needs one)
                     rotations([[0, 0], [-1, 0], [1, 0], [0, -1]]), # T
                     [[[0, 0], [-1, 0], [1, 0], [2, 0]], # long (only needs two)
@@ -20,8 +19,7 @@ class MyPiece < Piece
                     rotations([[0, 0], [0, -1], [0, 1], [-1, 1]]), # inverted L
                     rotations([[0, 0], [-1, 0], [0, -1], [1, -1]]), # S
                     rotations([[0, 0], [1, 0], [0, -1], [-1, -1]])] # Z
-    
-                
+                   
     # Your Enhancements here
     def self.next_piece (board)
         if @cheat
@@ -36,12 +34,10 @@ class MyPiece < Piece
     def self.cheat ()
         @cheat = true
     end
-    
 end
 
 class MyBoard < Board
     # Your Enhancements here:
-
     def initialize (game)
         @grid = Array.new(num_rows) {Array.new(num_columns)}
         @current_block = MyPiece.next_piece(self)
@@ -62,18 +58,18 @@ class MyBoard < Board
     end
 
     # gets the information from the current piece about where it is and uses this
-  # to store the piece on the board itself.  Then calls remove_filled.
-  def store_current
-    locations = @current_block.current_rotation
-    displacement = @current_block.position
-    (0..(locations.length - 1)).each{|index| 
-      current = locations[index];
-      @grid[current[1]+displacement[1]][current[0]+displacement[0]] = 
-      @current_pos[index]
-    }
-    remove_filled
-    @delay = [@delay - 2, 80].max
-  end
+    # to store the piece on the board itself.  Then calls remove_filled.
+    def store_current
+        locations = @current_block.current_rotation
+        displacement = @current_block.position
+        (0..(locations.length - 1)).each{|index| 
+            current = locations[index];
+            @grid[current[1]+displacement[1]][current[0]+displacement[0]] = 
+            @current_pos[index]
+        }
+        remove_filled
+        @delay = [@delay - 2, 80].max
+    end
 
 end
 
@@ -96,10 +92,20 @@ class MyTetris < Tetris
         @root.bind('u' , proc {@board.rotate_counter_clockwise; @board.rotate_counter_clockwise})
         @root.bind('c' , proc   {if @board.score > 99
                                     MyPiece.cheat()
-                                end
-                                })
+                                end})
     end
+end
 
+class MyPieceChallenge < Piece
+    
+end
+
+class MyBoardChallenge < Board
+    
+end
+
+class MyTetrisChallenge < Tetris
+    
 end
 
 
